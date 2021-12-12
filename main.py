@@ -1,3 +1,4 @@
+from math import comb
 import constraint
 import sys
 from constraint import *
@@ -26,7 +27,7 @@ with open("contenedores.txt") as textFile:
 
 new_array_mapa=[]
 MapaShape=np.shape(array_mapa)
-for len in range(0,MapaShape[0]):
+for length in range(0,MapaShape[0]):
     new_array_mapa.append([])
 #Create the new map array with the cell type, row and column
 for row in range(0,MapaShape[0]):
@@ -65,15 +66,34 @@ for variable in new_array_contenedores:
     elif 'R' in variable:
         problem.addVariable(variable,dominioE)
 problem.addConstraint(constraint.AllDifferentConstraint())
-#Constraint so no container is floating
-# def notFloating(containerA, containerB):
-#     if (int(containerA[1])==(int(containerB[1]) - 1) and int(containerA[2])==int(containerB[2])) or :
-#         return True
-#
-# for x in new_array_contenedores:
-#     for y in new_array_contenedores:
-#         if x!=y:
-#             problem.addConstraint(notFloating,(x,y))
+##Constraint so theres no floating container
+deepestEValue=0
+deepestNValue=0
+for row in range(0,newArrMapaShape[0]):
+    for column in range(0,newArrMapaShape[1]):
+        if 'E' in new_array_mapa[row][column]:
+            if int(new_array_mapa[row][column][1])>deepestEValue:
+                deepestEValue=int(new_array_mapa[row][column][1])
+        elif 'N' in new_array_mapa[row][column]:
+            if int(new_array_mapa[row][column][1])>deepestNValue:
+                deepestNValue=int(new_array_mapa[row][column][1])
+deepestNonXValue=max(deepestEValue,deepestNValue)
+def notFloating(*args):
+    lastRow=False
+    for x in args:
+        if int(x[1])==deepestNonXValue:
+            lastRow=True
+    contiguousAmount=0
+    for x in args:
+        for y in args:
+            if x!=y:
+                if (abs(int(x[1])-int(y[1]))==1 and int(x[2])==int(y[2])) or (abs(int(x[2])-int(y[2]))==1 and int(x[1])==int(y[1])) :
+                    contiguousAmount+=1
+
+    if lastRow == True and contiguousAmount==comb(len(args),2):
+        return True
+problem.addConstraint(notFloating,new_array_contenedores)
+
 
 
 
