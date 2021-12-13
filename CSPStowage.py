@@ -6,22 +6,20 @@ import numpy as np
 import pandas as pd
 import copy
 
-#Todo
-# if len(sys.argv) != 4:
-#     sys.exit("Invalid amount of arguments to start the program")
-# path = sys.argv[1]
-# map_path = sys.argv[2]
-# container_path = sys.argv[3]
+if len(sys.argv) != 3:
+    print(sys.argv)
+    sys.exit("Invalid amount of arguments to start the program")
+map_path = sys.argv[1]
+container_path = sys.argv[2]
+
 
 array_mapa=[]
 array_contenedores=[]
-#TODO: cambiar esto para que use map_path
-with open("mapa.txt") as textFile:
+with open(""+map_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_mapa=lines
 
-#TODO: cambiar esto para que use container_path
-with open("contenedores.txt") as textFile:
+with open(""+container_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_contenedores=lines
 
@@ -65,6 +63,7 @@ for variable in new_array_contenedores:
         problem.addVariable(variable,dominioN+dominioE)
     elif 'R' in variable:
         problem.addVariable(variable,dominioE)
+#Constraint so every container has a different location
 problem.addConstraint(constraint.AllDifferentConstraint())
 ##Constraint so theres no floating container
 deepestEValue=0
@@ -89,21 +88,28 @@ def notFloating(*args):
             if x!=y:
                 if (abs(int(x[1])-int(y[1]))==1 and int(x[2])==int(y[2])) or (abs(int(x[2])-int(y[2]))==1 and int(x[1])==int(y[1])) :
                     contiguousAmount+=1
-
     if lastRow == True and contiguousAmount==comb(len(args),2):
         return True
 problem.addConstraint(notFloating,new_array_contenedores)
 
+def checkPorts(*args):
 
 
+    pass
 
 
 print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
 print("Solucion final")
 solutions=problem.getSolutions()
 solutionN=1
+#Create empty file
+with open(""+map_path+"-"+container_path+".output", 'w') as f:
+    pass
+#print and write solutions
 for solution in solutions:
     print("Solution Nr. "+str(solutionN))
+    contenedores=[]
+    celdas=[]
     solutionN+=1
     #Copy final map array to modify it and insert containers in it
     final_map_array=copy.deepcopy(new_array_mapa)
@@ -111,6 +117,13 @@ for solution in solutions:
     dataframe=pd.DataFrame.from_dict(solution,orient="index",columns=['Cell'])
     dataframe.reset_index(level=0,inplace=True)
     dataframe.columns=['Container','Cell']
+    #Write txt file
+    tmpStr = '{'
+    for index, row in dataframe.iterrows():
+        tmpStr += row['Container'][0] + ': (' + row['Cell'][2] +', '+ row['Cell'][1] + '), '
+    tmpStr += '}\n'
+    with open(""+map_path+"-"+container_path+".output", 'a') as f:
+        f.write(tmpStr)
     #Fill cell map with the containers
     for row in range(0,newArrMapaShape[0]):
         for column in range(0,newArrMapaShape[1]):
