@@ -9,7 +9,7 @@ import copy
 if len(sys.argv) != 4:
     print(sys.argv)
     sys.exit("Invalid amount of arguments to start the program")
-path = sys.flags[1]
+path = sys.argv[1]
 map_path = sys.argv[2]
 container_path = sys.argv[3]
 
