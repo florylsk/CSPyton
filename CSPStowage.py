@@ -6,20 +6,21 @@ import numpy as np
 import pandas as pd
 import copy
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 4:
     print(sys.argv)
     sys.exit("Invalid amount of arguments to start the program")
-map_path = sys.argv[1]
-container_path = sys.argv[2]
+path = sys.flags[1]
+map_path = sys.argv[2]
+container_path = sys.argv[3]
 
 
 array_mapa=[]
 array_contenedores=[]
-with open(""+map_path+".txt") as textFile:
+with open(""+path+"/"+map_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_mapa=lines
 
-with open(""+container_path+".txt") as textFile:
+with open(""+path+"/"+container_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_contenedores=lines
 
