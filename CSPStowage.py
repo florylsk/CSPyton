@@ -79,39 +79,42 @@ for row in range(0,newArrMapaShape[0]):
                 deepestNValue=int(new_array_mapa[row][column][1])
 deepestNonXValue=max(deepestEValue,deepestNValue)
 def notFloating(*args):
-    lastRow=False
-    for x in args:
-        if int(x[1])==deepestNonXValue:
-            lastRow=True
     contiguousAmount=0
     for x in args:
         for y in args:
             if x!=y:
                 if (abs(int(x[1])-int(y[1]))==1 and int(x[2])==int(y[2])) or (abs(int(x[2])-int(y[2]))==1 and int(x[1])==int(y[1])) :
                     contiguousAmount+=1
-    if lastRow == True and contiguousAmount==comb(len(args),2):
+    if contiguousAmount==comb(len(args),2):
         return True
 problem.addConstraint(notFloating,new_array_contenedores)
 
-def checkPorts(*args):
+def checkPort2(*args):
+    lastRow = False
+    for x in args:
+        if int(x[1])==deepestNonXValue:
+            lastRow = True
+    if lastRow == True:
+        return True
 
 
-    pass
+containersPort2=[]
+for _container in new_array_contenedores:
+    if _container[2]=='2':
+        containersPort2.append(_container)
+problem.addConstraint(checkPort2,containersPort2)
 
-
-print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
-print("Solucion final")
 solutions=problem.getSolutions()
 solutionN=1
 #Create empty file
-with open(""+map_path+"-"+container_path+".output", 'w') as f:
+with open(""+map_path+"-"+container_path+".output", 'w',encoding="utf-8") as f:
+    f.write("Número de soluciones: "+ str(len(solutions))+"\n")
+with open(""+map_path+"-"+container_path+"-pretty.output", 'w',encoding="utf-8") as f:
     pass
 #print and write solutions
 for solution in solutions:
-    print("Solution Nr. "+str(solutionN))
     contenedores=[]
     celdas=[]
-    solutionN+=1
     #Copy final map array to modify it and insert containers in it
     final_map_array=copy.deepcopy(new_array_mapa)
     #Create dataframe to store pairs of container:cell
@@ -136,8 +139,14 @@ for solution in solutions:
         for column in range(0,newArrMapaShape[1]):
             final_map_array[row][column]=final_map_array[row][column][0]
     #Print solution
+    prettyStr = "Solution Nr."+str(solutionN)+"\n"
     for row in final_map_array:
-        print(row)
-    print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
+        prettyStr+=str(row)+"\n"
+    prettyStr+="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"+"\n"
+    with open(""+map_path+"-"+container_path+"-pretty.output", 'a') as f:
+        f.write(prettyStr)
+    solutionN += 1
+
+
 
 
