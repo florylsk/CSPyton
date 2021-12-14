@@ -19,10 +19,16 @@ array_contenedores=[]
 with open(""+path+"/"+map_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_mapa=lines
+    if len(array_mapa)==0:
+        print("The map is empty")
+        sys.exit()
 
 with open(""+path+"/"+container_path+".txt") as textFile:
     lines = [line.split() for line in textFile]
     array_contenedores=lines
+    if len(array_contenedores)==0:
+        print("There are no containers")
+        sys.exit()
 
 new_array_mapa=[]
 MapaShape=np.shape(array_mapa)
@@ -33,17 +39,24 @@ for row in range(0,MapaShape[0]):
     for column in range(0,MapaShape[1]):
         new_array_mapa[row].append(array_mapa[row][column]+str(row)+str(column))
 
-print("Array final del mapa")
-for row in new_array_mapa:
-    print(row)
+
 
 new_array_contenedores=[]
 ContendoresShape=np.shape(array_contenedores)
 #create the new container array with merged id,type and port
 for row in range(0,ContendoresShape[0]):
-    new_array_contenedores.append(array_contenedores[row][0]+array_contenedores[row][1]+array_contenedores[row][2])
+    if len(array_contenedores[row])==3:
+        new_array_contenedores.append(array_contenedores[row][0]+array_contenedores[row][1]+array_contenedores[row][2])
+    elif len(array_contenedores[row])==4:
+        new_array_contenedores.append(array_contenedores[row][0] + array_contenedores[row][1] + array_contenedores[row][2]) + array_contenedores[row][3]
+
+print("Array final del mapa")
+for row in new_array_mapa:
+    print(row)
+
 print("Array final de contenedores")
 print(new_array_contenedores)
+
 
 problem = Problem()
 
@@ -83,10 +96,11 @@ def notFloating(*args):
     for x in args:
         for y in args:
             if x!=y:
-                if (abs(int(x[1])-int(y[1]))==1 and int(x[2])==int(y[2])) or (abs(int(x[2])-int(y[2]))==1 and int(x[1])==int(y[1])) :
+                if (abs(int(x[1])-int(y[1]))==1 and int(x[2])==int(y[2])) or (abs(int(x[2])-int(y[2]))==1 and int(x[1])==int(y[1])):
                     contiguousAmount+=1
     if contiguousAmount==comb(len(args),2):
         return True
+
 problem.addConstraint(notFloating,new_array_contenedores)
 
 def checkPort2(*args):
@@ -100,9 +114,14 @@ def checkPort2(*args):
 
 containersPort2=[]
 for _container in new_array_contenedores:
-    if _container[2]=='2':
-        containersPort2.append(_container)
-problem.addConstraint(checkPort2,containersPort2)
+    if len(_container)==3:
+        if _container[2]=='2':
+            containersPort2.append(_container)
+    elif len(_container)==4:
+        if _container[3]=='2':
+            containersPort2.append(_container)
+if len(containersPort2)!=0:
+    problem.addConstraint(checkPort2,containersPort2)
 
 solutions=problem.getSolutions()
 solutionN=1
@@ -124,7 +143,10 @@ for solution in solutions:
     #Write txt file
     tmpStr = '{'
     for index, row in dataframe.iterrows():
-        tmpStr += row['Container'][0] + ': (' + row['Cell'][2] +', '+ row['Cell'][1] + '), '
+        if len(row['Container'])==3:
+            tmpStr += row['Container'][0] + ': (' + row['Cell'][2] +', '+ row['Cell'][1] + '), '
+        else:
+            tmpStr += row['Container'][0] +row['Container'][1] +': (' + row['Cell'][2] + ', ' + row['Cell'][1] + '), '
     tmpStr += '}\n'
     with open(""+map_path+"-"+container_path+".output", 'a') as f:
         f.write(tmpStr)
@@ -137,7 +159,10 @@ for solution in solutions:
     #Remove container and port from the container name
     for row in range(0,newArrMapaShape[0]):
         for column in range(0,newArrMapaShape[1]):
-            final_map_array[row][column]=final_map_array[row][column][0]
+            if len(final_map_array[row][column])==1:
+                final_map_array[row][column]=final_map_array[row][column][0]
+            else:
+                final_map_array[row][column] = final_map_array[row][column][0]+final_map_array[row][column][1]
     #Print solution
     prettyStr = "Solution Nr."+str(solutionN)+"\n"
     for row in final_map_array:
