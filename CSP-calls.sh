@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash
 python3 CSPStowage.py CSP-tests mapa1 contenedores1
 python3 CSPStowage.py CSP-tests mapa2 contenedores2
 python3 CSPStowage.py CSP-tests mapa3 contenedores3
