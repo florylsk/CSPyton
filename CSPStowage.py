@@ -5,6 +5,7 @@ from constraint import *
 import numpy as np
 import pandas as pd
 import copy
+import os
 
 if len(sys.argv) != 4:
     print(sys.argv)
@@ -29,6 +30,7 @@ with open(""+path+"/"+container_path+".txt") as textFile:
     if len(array_contenedores)==0:
         print("There are no containers")
         sys.exit()
+
 
 new_array_mapa=[]
 MapaShape=np.shape(array_mapa)
@@ -82,6 +84,7 @@ problem.addConstraint(constraint.AllDifferentConstraint())
 ##Constraint so theres no floating container
 deepestEValue=0
 deepestNValue=0
+numOfUpperX=0
 for row in range(0,newArrMapaShape[0]):
     for column in range(0,newArrMapaShape[1]):
         if 'E' in new_array_mapa[row][column]:
@@ -90,6 +93,8 @@ for row in range(0,newArrMapaShape[0]):
         elif 'N' in new_array_mapa[row][column]:
             if int(new_array_mapa[row][column][1])>deepestNValue:
                 deepestNValue=int(new_array_mapa[row][column][1])
+        elif 'X' in new_array_mapa[row][column] and not 'X' in new_array_mapa[row-1][column]:
+            numOfUpperX+=1
 deepestNonXValue=max(deepestEValue,deepestNValue)
 def notFloating(*args):
     contiguousAmount=0
@@ -125,10 +130,11 @@ if len(containersPort2)!=0:
 
 solutions=problem.getSolutions()
 solutionN=1
-#Create empty file
-with open(""+map_path+"-"+container_path+".output", 'w',encoding="utf-8") as f:
+#Create output directory and empty files to fill them later
+os.makedirs("outputCSP",exist_ok=True)
+with open("outputCSP/"+map_path+"-"+container_path+".output", 'w',encoding="utf-8") as f:
     f.write("Número de soluciones: "+ str(len(solutions))+"\n")
-with open(""+map_path+"-"+container_path+"-pretty.output", 'w',encoding="utf-8") as f:
+with open("outputCSP/"+map_path+"-"+container_path+"-pretty.output", 'w',encoding="utf-8") as f:
     pass
 #print and write solutions
 for solution in solutions:
@@ -148,7 +154,7 @@ for solution in solutions:
         else:
             tmpStr += row['Container'][0] +row['Container'][1] +': (' + row['Cell'][2] + ', ' + row['Cell'][1] + '), '
     tmpStr += '}\n'
-    with open(""+map_path+"-"+container_path+".output", 'a') as f:
+    with open("outputCSP/"+map_path+"-"+container_path+".output", 'a') as f:
         f.write(tmpStr)
     #Fill cell map with the containers
     for row in range(0,newArrMapaShape[0]):
@@ -159,7 +165,7 @@ for solution in solutions:
     #Remove container and port from the container name
     for row in range(0,newArrMapaShape[0]):
         for column in range(0,newArrMapaShape[1]):
-            if len(final_map_array[row][column])==1:
+            if len(final_map_array[row][column])==3:
                 final_map_array[row][column]=final_map_array[row][column][0]
             else:
                 final_map_array[row][column] = final_map_array[row][column][0]+final_map_array[row][column][1]
@@ -168,7 +174,7 @@ for solution in solutions:
     for row in final_map_array:
         prettyStr+=str(row)+"\n"
     prettyStr+="------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"+"\n"
-    with open(""+map_path+"-"+container_path+"-pretty.output", 'a') as f:
+    with open("outputCSP/"+map_path+"-"+container_path+"-pretty.output", 'a') as f:
         f.write(prettyStr)
     solutionN += 1
 

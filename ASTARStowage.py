@@ -43,7 +43,7 @@ def main():
           [2,2,2,2],
           [0,2,2,0],
           [0,0,0,0]]
-    Node start=Node(state=start)
+    start=Node(state=start)
     end=
     aStar(start,end)
 
