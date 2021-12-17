@@ -107,11 +107,28 @@ class Node:
             return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.row),move="DescargarContainer-"+_container.id+_container.tipo+_container.puerto)
 
 
+    def navegar(self):
+        if self.state[4]==2:
+            return None
+        if self.state[4]==0:
+            #if theres still containers to load in port 0
+            if len(self.state[0])!= 0:
+                return None
+            navegar=copy.deepcopy(self.state)
+            navegar[4]=1
+            return Node(navegar,parent=self,position=self.position+1,g=self.g+1,h=self.h+3500,move="NavegarA-"+navegar[4])
 
 
 
 
-
+        if self.state[4]==1:
+            #if theres still containers to unload in port 1
+            if sum(c.puerto == 1 for c in self.state[1])!=0:
+                return None
+            navegar = copy.deepcopy(self.state)
+            navegar[4] = 2
+            return Node(navegar, parent=self, position=self.position + 1, g=self.g + 1, h=self.h + 3500,
+                        move="NavegarA-" + navegar[4])
 
 
 class Container:
