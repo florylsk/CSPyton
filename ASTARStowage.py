@@ -41,6 +41,8 @@ class Node:
                     if mapa[row][column] == 'N' or mapa[row][column] == 'E':
                         # if no loaded containers yet
                         if len(self.state[1])==0:
+                            if mapa[row+1][column]!='X':
+                                continue
                             container.fila=row
                             container.columna=column
                             #using deepcopy so the copy doesnt share same memory pointer
@@ -58,6 +60,15 @@ class Node:
                                     continueFlag=True
                             if continueFlag:
                                 continue
+                            firstFlag=False
+                            secondFlag=False
+                            for c in self.state[1]:
+                                if c.fila==row+1 and c.columna==column:
+                                    firstFlag=True
+                            if mapa[row + 1][column] != 'X':
+                                secondFlag=True
+                            if firstFlag==False or secondFlag==False:
+                                continue
                             container.fila = row
                             container.columna = column
                             cargar = copy.deepcopy(self.state)
@@ -68,6 +79,8 @@ class Node:
                     if mapa[row][column] == 'E':
                         # if no loaded containers yet
                         if len(self.state[1])==0:
+                            if mapa[row+1][column]!='X':
+                                continue
                             container.fila=row
                             container.columna=column
                             cargar=copy.deepcopy(self.state)
