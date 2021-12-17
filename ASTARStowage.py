@@ -20,7 +20,7 @@ class Node:
         self.position=position
         self.g=g
         self.h=h
-        self.f=g+h
+        self.f=self.g+self.h
         self.move=move
 
     def __eq__(self, other):
@@ -88,11 +88,12 @@ class Node:
         #cant unload on first port
         if self.state[4]==0 or len(self.state[1])==0:
             return None
+        #retrieve first available container from loaded containers list
+        _container = self.state[1][0]
         if self.state[4]==1:
             #if theres no more containers to unload to port 1
             if sum(c.puerto == 1 for c in self.state[1])==0:
                 return None
-            _container = self.state[1][0]
             descargar=copy.deepcopy(self.state)
             descargar[1].pop(0)
             descargar[2].append(_container)
@@ -100,7 +101,6 @@ class Node:
         if self.state[4]==2:
             if sum(c.puerto == 2 for c in self.state[1])==0:
                 return None
-            _container = self.state[1][0]
             descargar=copy.deepcopy(self.state)
             descargar[1].pop(0)
             descargar[3].append(_container)
@@ -110,6 +110,7 @@ class Node:
     def navegar(self):
         if self.state[4]==2:
             return None
+        #if port is 1
         if self.state[4]==0:
             #if theres still containers to load in port 0
             if len(self.state[0])!= 0:
@@ -117,19 +118,37 @@ class Node:
             navegar=copy.deepcopy(self.state)
             navegar[4]=1
             return Node(navegar,parent=self,position=self.position+1,g=self.g+1,h=self.h+3500,move="NavegarA-"+navegar[4])
-
-
-
-
+        #if port is 2
         if self.state[4]==1:
             #if theres still containers to unload in port 1
             if sum(c.puerto == 1 for c in self.state[1])!=0:
                 return None
             navegar = copy.deepcopy(self.state)
             navegar[4] = 2
-            return Node(navegar, parent=self, position=self.position + 1, g=self.g + 1, h=self.h + 3500,
-                        move="NavegarA-" + navegar[4])
+            return Node(navegar, parent=self, position=self.position + 1, g=self.g + 1, h=self.h + 3500,move="NavegarA-" + navegar[4])
 
+
+    def doAll(self,graph):
+        cargar=self.cargar()
+        cargar=None if graph.isClosed(cargar) else cargar
+        descargar=self.descargar()
+        descargar=None if graph.isClosed(descargar) else descargar
+        navegar=self.navegar()
+        navegar=None if graph.isClosed(navegar) else navegar
+
+        graph.closeNode(self)
+        graph.openNode(cargar)
+        graph.openNode(descargar)
+        graph.openNode(navegar)
+
+        return cargar,descargar,navegar
+
+    def print(self):
+        if self.parent is None:
+            print("Start")
+            return
+        print(self.move+"\n")
+        return self.parent.print()
 
 class Container:
 
