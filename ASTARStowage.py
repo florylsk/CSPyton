@@ -14,7 +14,7 @@ mapa=    [['N','N','N','N'],
           ['X','X','X','X']]
 mapaShape=np.shape(mapa)
 class Node:
-    def __init__(self,state,parent=None,position=None,g=0,h=0,move='start'):
+    def __init__(self,state,parent=None,position=0,g=0,h=0,move='start'):
         self.state=state
         self.parent=parent
         self.position=position
@@ -23,8 +23,9 @@ class Node:
         self.f=self.g+self.h
         self.move=move
 
-    def __eq__(self, other):
-        return self.position==other.position
+    def equals(self, other):
+         return np.array_equal(self.state,other.state)
+
 
     #accion para cargar un contenedores disponible en el mapa
     def cargar(self):
@@ -47,19 +48,22 @@ class Node:
                             #remove first container from the available containers
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
+                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+str(container._id)+container.tipo+str(container.puerto)+"-EnPos-"+str(container.fila)+str(container.columna))
                         else:
                             #for container in loaded containers
+                            continueFlag=False
                             for c in self.state[1]:
                                 #if container already lodaded in that position continue the for loop
                                 if c.fila==row and c.columna==column:
-                                    continue
+                                    continueFlag=True
+                            if continueFlag:
+                                continue
                             container.fila = row
                             container.columna = column
                             cargar = copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move='CargarContainer-' + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
+                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move='CargarContainer-' +str(container._id)+container.tipo+str(container.puerto)+"-EnPos-"+str(container.fila)+str(container.columna))
                 elif container.tipo=='R':
                     if mapa[row][column] == 'E':
                         # if no loaded containers yet
@@ -69,19 +73,22 @@ class Node:
                             cargar=copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
+                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+str(container._id)+container.tipo+str(container.puerto)+"-EnPos-"+str(container.fila)+str(container.columna))
                         else:
                             #for container in loaded containers
+                            continueFlag=False
                             for c in self.state[1]:
                                 #if container already lodaded in that position continue the for loop
                                 if c.fila==row and c.columna==column:
-                                    continue
+                                    continueFlag=True
+                            if continueFlag:
+                                continue
                             container.fila = row
                             container.columna = column
                             cargar = copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move="CargarContainer-" + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
+                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move="CargarContainer-" +str(container._id)+container.tipo+str(container.puerto)+"-EnPos-"+str(container.fila)+str(container.columna))
 
 
     def descargar(self):
@@ -97,14 +104,14 @@ class Node:
             descargar=copy.deepcopy(self.state)
             descargar[1].pop(0)
             descargar[2].append(_container)
-            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.row),move="DescargarContainer-"+_container.id+_container.tipo+_container.puerto)
+            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.fila),move="DescargarContainer-"+str(_container._id)+_container.tipo+str(_container.puerto))
         if self.state[4]==2:
             if sum(c.puerto == 2 for c in self.state[1])==0:
                 return None
             descargar=copy.deepcopy(self.state)
             descargar[1].pop(0)
             descargar[3].append(_container)
-            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.row),move="DescargarContainer-"+_container.id+_container.tipo+_container.puerto)
+            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.fila),move="DescargarContainer-"+str(_container._id)+_container.tipo+str(_container.puerto))
 
 
     def navegar(self):
@@ -117,7 +124,7 @@ class Node:
                 return None
             navegar=copy.deepcopy(self.state)
             navegar[4]=1
-            return Node(navegar,parent=self,position=self.position+1,g=self.g+1,h=self.h+3500,move="NavegarA-"+navegar[4])
+            return Node(navegar,parent=self,position=self.position+1,g=self.g+1,h=self.h+3500,move="NavegarA-"+str(navegar[4]))
         #if port is 2
         if self.state[4]==1:
             #if theres still containers to unload in port 1
@@ -125,7 +132,7 @@ class Node:
                 return None
             navegar = copy.deepcopy(self.state)
             navegar[4] = 2
-            return Node(navegar, parent=self, position=self.position + 1, g=self.g + 1, h=self.h + 3500,move="NavegarA-" + navegar[4])
+            return Node(navegar, parent=self, position=self.position + 1, g=self.g + 1, h=self.h + 3500,move="NavegarA-" + str(navegar[4]))
 
 
     def doAll(self,graph):
@@ -136,11 +143,10 @@ class Node:
         navegar=self.navegar()
         navegar=None if graph.isClosed(navegar) else navegar
 
-        graph.closeNode(self)
-        graph.openNode(cargar)
-        graph.openNode(descargar)
-        graph.openNode(navegar)
-
+        # graph.closeNode(self)
+        # graph.openNode(cargar)
+        # graph.openNode(descargar)
+        # graph.openNode(navegar)
         return cargar,descargar,navegar
 
     def print(self):
@@ -153,8 +159,8 @@ class Node:
 class Container:
 
 
-    def __init__(self,id,tipo,puerto,fila=-1,columna=-1):
-        self.id=id
+    def __init__(self,_id,tipo,puerto,fila=-1,columna=-1):
+        self._id=_id
         self.tipo=tipo
         self.puerto=puerto
         self.fila=fila
@@ -169,12 +175,41 @@ class AStar:
         self.open=[]
         self.closed=[]
 
+
+    def isClosed(self,node):
+        if node is None:
+            return True
+
+
+
+
+
     def solve(self):
+        self.open.append(self.start)
+        currentNode=None
+        while len(self.open)!=0:
+            currentNode=self.open[0]
+            self.open.pop(0)
+            self.closed.append(currentNode)
+            if currentNode.state is not None:
+                if currentNode.equals(self.end):
+                    break
+            adjNodes=currentNode.doAll(self)
+            for node in adjNodes:
+                if node in self.closed:
+                    continue
+                if node in self.open:
+                    continue
+                if node is not None:
+                    self.open.append(node)
+        currentNode.print()
+
 
 
 
 def main():
     #estado=contenedoresDisponibles,contenedoresCargados,contenedoresDescargados1,contenedoresDescargados2,puertoActual
+    np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
     container1=Container(1,'S',1)
     container2=Container(2,'S',1)
     container3=Container(3,'S',1)
@@ -197,7 +232,7 @@ def main():
            [container4,container5],
            2
            ]
-    end=None(state=_end)
+    end=Node(state=_end)
     solver=AStar(start,end)
     solver.solve()
 
