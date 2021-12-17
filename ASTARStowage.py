@@ -29,7 +29,7 @@ class Node:
     #accion para cargar un contenedores disponible en el mapa
     def cargar(self):
         #if no available containers to deploy or port isnt 0 return empty node
-        if len(self.state[0])==0 or self.state[4]==0:
+        if len(self.state[0])==0 or self.state[4]!=0:
             return None
         #get first container available
         container=self.state[0][0]
@@ -42,15 +42,16 @@ class Node:
                         if len(self.state[1])==0:
                             container.fila=row
                             container.columna=column
+                            #using deepcopy so the copy doesnt share same memory pointer
                             cargar=copy.deepcopy(self.state)
                             #remove first container from the available containers
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
+                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
                         else:
                             #for container in loaded containers
                             for c in self.state[1]:
-                                #if container already lodaded continue the for loop
+                                #if container already lodaded in that position continue the for loop
                                 if c.fila==row and c.columna==column:
                                     continue
                             container.fila = row
@@ -58,7 +59,7 @@ class Node:
                             cargar = copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila), move='CargarContainer-' + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
+                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move='CargarContainer-' + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
                 elif container.tipo=='R':
                     if mapa[row][column] == 'E':
                         # if no loaded containers yet
@@ -68,11 +69,11 @@ class Node:
                             cargar=copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
+                            return Node(cargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(10+container.fila+1),move='CargarContainer-'+container.id+container.tipo+container.puerto+"-EnPos-"+container.fila+container.columna)
                         else:
                             #for container in loaded containers
                             for c in self.state[1]:
-                                #if container already lodaded continue the for loop
+                                #if container already lodaded in that position continue the for loop
                                 if c.fila==row and c.columna==column:
                                     continue
                             container.fila = row
@@ -80,9 +81,30 @@ class Node:
                             cargar = copy.deepcopy(self.state)
                             cargar[0].pop(0)
                             cargar[1].append(container)
-                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila), move='CargarContainer-' + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
+                            return Node(cargar, parent=self, position=self.position + 1, g=self.g + 1,h=self.h+(10+container.fila+1), move="CargarContainer-" + container.id + container.tipo + container.puerto + "-EnPos-" + container.fila + container.columna)
 
 
+    def descargar(self):
+        #cant unload on first port
+        if self.state[4]==0 or len(self.state[1])==0:
+            return None
+        if self.state[4]==1:
+            #if theres no more containers to unload to port 1
+            if sum(c.puerto == 1 for c in self.state[1])==0:
+                return None
+            _container = self.state[1][0]
+            descargar=copy.deepcopy(self.state)
+            descargar[1].pop(0)
+            descargar[2].append(_container)
+            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.row),move="DescargarContainer-"+_container.id+_container.tipo+_container.puerto)
+        if self.state[4]==2:
+            if sum(c.puerto == 2 for c in self.state[1])==0:
+                return None
+            _container = self.state[1][0]
+            descargar=copy.deepcopy(self.state)
+            descargar[1].pop(0)
+            descargar[3].append(_container)
+            return Node(descargar,parent=self,position=self.position+1,g=self.g+1,h=self.h+(15+2*_container.row),move="DescargarContainer-"+_container.id+_container.tipo+_container.puerto)
 
 
 
