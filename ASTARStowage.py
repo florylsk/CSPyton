@@ -5,14 +5,36 @@ from constraint import *
 import numpy as np
 import pandas as pd
 import copy
+import os
 
 #Te pasan contenedores, inicial->puerto1->puerto2,descaga o carga de contenedores, busqueda de contenedores del puerto X e ir sacandolos
-mapa=    [['N','N','N','N'],
-          ['N','N','N','N'],
-          ['E','N','N','E'],
-          ['X','E','E','X'],
-          ['X','X','X','X']]
-mapaShape=np.shape(mapa)
+# mapa=    [['N','N','N','N'],
+#           ['N','N','N','N'],
+#           ['E','N','N','E'],
+#           ['X','E','E','X'],
+#           ['X','X','X','X']]
+if len(sys.argv) != 4:
+    print(sys.argv)
+    sys.exit("Invalid amount of arguments to start the program")
+path = sys.argv[1]
+map_path = sys.argv[2]
+container_path = sys.argv[3]
+with open("" + path + "/" + map_path + ".txt") as textFile:
+    lines = [line.split() for line in textFile]
+    mapa = lines
+    if len(mapa) == 0:
+        print("The map is empty")
+        sys.exit()
+
+with open("" + path + "/" + container_path + ".txt") as textFile:
+    lines = [line.split() for line in textFile]
+    array_contenedores = lines
+    if len(array_contenedores) == 0:
+        print("There are no containers")
+        sys.exit()
+mapaShape = np.shape(mapa)
+containers=[]
+
 class Node:
     def __init__(self,state,parent=None,position=0,g=0,h=0,move='start'):
         self.state=state
@@ -221,17 +243,14 @@ class AStar:
 
 
 def main():
-    #estado=contenedoresDisponibles,contenedoresCargados,contenedoresDescargados1,contenedoresDescargados2,puertoActual
     np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
-    container1=Container(1,'S',1)
-    container2=Container(2,'S',1)
-    container3=Container(3,'S',1)
-    container4=Container(4,'R',2)
-    container5=Container(5,'R',2)
-
-
+    for c in array_contenedores:
+        containers.append(Container(_id=int(c[0]),tipo=c[1],puerto=int(c[2])))
+    contenedoresPuerto1=lambda _c:_c.puerto==1,containers
+    contenedoresPuerto2=lambda _c:_c.puerto==2,containers
+    # Estado=[contenedoresDisponibles,contenedoresCargados,contenedoresDescargados1,contenedoresDescargados2,puertoActual]
     _start=[
-           [container1,container2,container3,container4,container5],
+           containers,
             [],
            [],
            [],
@@ -241,21 +260,13 @@ def main():
     _end=[
            [],
             [],
-           [container1,container2,container3],
-           [container4,container5],
+           contenedoresPuerto1,
+           contenedoresPuerto2,
            2
            ]
     end=Node(state=_end)
     solver=AStar(start,end)
     solver.solve()
-
-
-
-
-
-
-
-
 
 
 if __name__=="__main__":

@@ -14,7 +14,6 @@ path = sys.argv[1]
 map_path = sys.argv[2]
 container_path = sys.argv[3]
 
-
 array_mapa=[]
 array_contenedores=[]
 with open(""+path+"/"+map_path+".txt") as textFile:
