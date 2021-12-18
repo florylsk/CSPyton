@@ -6,13 +6,10 @@ import numpy as np
 import pandas as pd
 import copy
 import os
+import random
+import timeit
 
 #Te pasan contenedores, inicial->puerto1->puerto2,descaga o carga de contenedores, busqueda de contenedores del puerto X e ir sacandolos
-# mapa=    [['N','N','N','N'],
-#           ['N','N','N','N'],
-#           ['E','N','N','E'],
-#           ['X','E','E','X'],
-#           ['X','X','X','X']]
 if len(sys.argv) != 4:
     print(sys.argv)
     sys.exit("Invalid amount of arguments to start the program")
@@ -46,7 +43,9 @@ class Node:
         self.move=move
 
     def equals(self, other):
-         return np.array_equal(self.state,other.state)
+         if other is None:
+             return False
+         return np.array_equal(self.state,other.state) and other.f==self.f
 
 
     #accion para cargar un contenedores disponible en el mapa
@@ -87,9 +86,9 @@ class Node:
                             for c in self.state[1]:
                                 if c.fila==row+1 and c.columna==column:
                                     firstFlag=True
-                            if mapa[row + 1][column] != 'X':
+                            if mapa[row + 1][column] == 'X':
                                 secondFlag=True
-                            if firstFlag==False or secondFlag==False:
+                            if firstFlag==False and secondFlag==False:
                                 continue
                             container.fila = row
                             container.columna = column
@@ -182,13 +181,19 @@ class Node:
         # graph.openNode(cargar)
         # graph.openNode(descargar)
         # graph.openNode(navegar)
-        return cargar,descargar,navegar
+        tmpList=[]
+        tmpList.append(cargar)
+        tmpList.append(descargar)
+        tmpList.append(navegar)
+        return tmpList
 
     def print(self):
         if self.parent is None:
-            print("Start")
+            with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'a') as f:
+                f.write("Start\n")
             return
-        print(self.move+"\n")
+        with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'a') as f:
+            f.write(self.move+"\n")
         return self.parent.print()
 
 class Container:
@@ -214,9 +219,26 @@ class AStar:
     def isClosed(self,node):
         if node is None:
             return True
+        for _node in self.closed:
+            if _node.equals(node):
+                return True
+        return False
 
 
+    def closeNode(self,node):
+        if node is None:
+            return True
+        self.open.remove(node)
+        for _node in self.closed:
+            if _node.equals(node):
+                self.closed.append(node)
+                return
 
+
+    def openNode(self,node):
+        if node is None:
+            return
+        self.open.append(node)
 
 
     def solve(self):
@@ -237,17 +259,28 @@ class AStar:
                     continue
                 if node is not None:
                     self.open.append(node)
+        os.makedirs("outputASTAR", exist_ok=True)
+        with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'w', encoding="utf-8") as f:
+            pass
+        with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.output", 'w', encoding="utf-8") as f:
+            f.write("Total g:"+str(currentNode.g)+"\nTotal h:"+str(currentNode.h)+"\nTotal f:"+str(currentNode.f)+"\n")
         currentNode.print()
 
 
 
-
 def main():
+    startTime = timeit.default_timer()
     np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
     for c in array_contenedores:
-        containers.append(Container(_id=int(c[0]),tipo=c[1],puerto=int(c[2])))
+        if len(c)==3:
+            containers.append(Container(_id=int(c[0]),tipo=c[1],puerto=int(c[2])))
+        else:
+            containers.append(Container(_id=int(c[0]+c[1]), tipo=c[2], puerto=int(c[3])))
     contenedoresPuerto1=lambda _c:_c.puerto==1,containers
     contenedoresPuerto2=lambda _c:_c.puerto==2,containers
+
+    # containers.sort(key=lambda x: x.tipo, reverse=False)
+    # containers.sort(key=lambda x: x.puerto, reverse=True)
     # Estado=[contenedoresDisponibles,contenedoresCargados,contenedoresDescargados1,contenedoresDescargados2,puertoActual]
     _start=[
            containers,
@@ -267,7 +300,17 @@ def main():
     end=Node(state=_end)
     solver=AStar(start,end)
     solver.solve()
-
-
+    stopTime = timeit.default_timer()
+    with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.output", 'a', encoding="utf-8") as f:
+        f.write("Runtime:"+str(stopTime-startTime)+" Seconds")
+    #write output reversed since node writing is recursive
+    readLines=[]
+    with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'r', encoding="utf-8") as f:
+        for line in f.readlines():
+            readLines.append(line)
+    readLines.reverse()
+    with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'w', encoding="utf-8") as f:
+        for line in readLines:
+            f.write(line)
 if __name__=="__main__":
     main()
