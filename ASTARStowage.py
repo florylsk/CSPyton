@@ -9,7 +9,7 @@ import os
 import random
 import timeit
 
-#Te pasan contenedores, inicial->puerto1->puerto2,descaga o carga de contenedores, busqueda de contenedores del puerto X e ir sacandolos
+
 if len(sys.argv) != 4:
     print(sys.argv)
     sys.exit("Invalid amount of arguments to start the program")
@@ -47,8 +47,6 @@ class Node:
              return False
          return np.array_equal(self.state,other.state) and other.f==self.f
 
-
-    #accion para cargar un contenedores disponible en el mapa
     def cargar(self):
         #if no available containers to deploy or port isnt 0 return empty node
         if len(self.state[0])==0 or self.state[4]!=0:
@@ -176,15 +174,12 @@ class Node:
         descargar=None if graph.isClosed(descargar) else descargar
         navegar=self.navegar()
         navegar=None if graph.isClosed(navegar) else navegar
-
+        #should work but doesn't currently
         # graph.closeNode(self)
         # graph.openNode(cargar)
         # graph.openNode(descargar)
         # graph.openNode(navegar)
-        tmpList=[]
-        tmpList.append(cargar)
-        tmpList.append(descargar)
-        tmpList.append(navegar)
+        tmpList= [cargar, descargar, navegar]
         return tmpList
 
     def print(self):
@@ -262,7 +257,7 @@ class AStar:
         os.makedirs("outputASTAR", exist_ok=True)
         with open("outputASTAR/" + map_path + "-" + container_path + ".output", 'w', encoding="utf-8") as f:
             pass
-        with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.output", 'w', encoding="utf-8") as f:
+        with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.stat", 'w', encoding="utf-8") as f:
             f.write("Total g:"+str(currentNode.g)+"\nTotal h:"+str(currentNode.h)+"\nTotal f:"+str(currentNode.f)+"\n")
         currentNode.print()
 
@@ -279,8 +274,6 @@ def main():
     contenedoresPuerto1=lambda _c:_c.puerto==1,containers
     contenedoresPuerto2=lambda _c:_c.puerto==2,containers
 
-    # containers.sort(key=lambda x: x.tipo, reverse=False)
-    # containers.sort(key=lambda x: x.puerto, reverse=True)
     # Estado=[contenedoresDisponibles,contenedoresCargados,contenedoresDescargados1,contenedoresDescargados2,puertoActual]
     _start=[
            containers,
@@ -301,7 +294,7 @@ def main():
     solver=AStar(start,end)
     solver.solve()
     stopTime = timeit.default_timer()
-    with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.output", 'a', encoding="utf-8") as f:
+    with open("outputASTAR/" + map_path + "-" + container_path + "-statistics.stat", 'a', encoding="utf-8") as f:
         f.write("Runtime:"+str(stopTime-startTime)+" Seconds")
     #write output reversed since node writing is recursive
     readLines=[]
